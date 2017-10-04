@@ -436,7 +436,6 @@ arb:
       index: "تفويضات" #?
       new: "انشاء تفويض" #?
     backend/manure_management_plans:
-      # bilan: "Balance sheet and forecast intervention"
       # edit: "Edit manure management plan: %{name}"
       index: "خطط إدارة السماد"
       new: "خطة جديدة لإدارة السماد"

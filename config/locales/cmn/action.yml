@@ -363,7 +363,6 @@ cmn:
       new: "新增贷款"
       # show: "Loan: %{name}"
     backend/manure_management_plans:
-      # bilan: "Balance sheet and forecast intervention"
       # edit: "Edit manure management plan: %{name}"
       index: "粪便管理计划"
       new: "新的粪便管理计划"

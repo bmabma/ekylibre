@@ -551,6 +551,19 @@ activity_tactics:
   updater_id:
     type: integer
     references: user
+administrative_areas:
+  id:
+    type: integer
+    required: true
+  name:
+    type: string
+  shape:
+    type: geometry
+    limit:
+      srid: 4326
+      type: multi_polygon
+  type:
+    type: string
 affairs:
   accounted_at:
     type: datetime
@@ -828,6 +841,23 @@ analysis_items:
   updater_id:
     type: integer
     references: user
+approaches:
+  classname:
+    type: string
+  id:
+    type: integer
+    required: true
+  name:
+    type: string
+  questions:
+    type: jsonb
+  shape:
+    type: geometry
+    limit:
+      srid: 4326
+      type: geometry
+  supply_nature:
+    type: string
 attachments:
   created_at:
     type: datetime
@@ -6772,6 +6802,19 @@ regularizations:
   updater_id:
     type: integer
     references: user
+regulatory_zones:
+  id:
+    type: integer
+    required: true
+  name:
+    type: string
+  shape:
+    type: geometry
+    limit:
+      srid: 4326
+      type: geometry
+  type:
+    type: string
 roles:
   created_at:
     type: datetime

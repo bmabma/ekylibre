@@ -363,7 +363,6 @@ jpn:
       new: "新たな融資"
       # show: "Loan: %{name}"
     backend/manure_management_plans:
-      # bilan: "Balance sheet and forecast intervention"
       # edit: "Edit manure management plan: %{name}"
       index: "肥料管理計画"
       new: "新しい肥料管理計画"

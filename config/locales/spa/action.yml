@@ -393,7 +393,6 @@ spa:
       sales_invoice: "%{nature} %{number}" #?
       sales_invoices: "Facturas" #?
     backend/manure_management_plans:
-      # bilan: "Balance sheet and forecast intervention"
       # edit: "Edit manure management plan: %{name}"
       index: "Planes de manejo de estiércol"
       new: "Nuevo plan de manejo del estiércol"

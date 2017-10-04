@@ -1240,6 +1240,7 @@ fra:
     # manure_management_plan: "Manure management plan"
     # manure_management_plan_zone: "Manure management plan zone"
     manure_management_plan_zones: "Zones de plan de fumure"
+    # manuring_interventions: "Manuring interventions"
     markers: "Repères" #?
     marketable: "Commercialisable"
     marketable_items_count: "Nombre de pièces commercialisables"

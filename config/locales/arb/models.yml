@@ -1837,6 +1837,7 @@ arb:
     # manure_management_plan: "Manure management plan"
     # manure_management_plan_zone: "Manure management plan zone"
     manure_management_plan_zones: "مناطق خطة إدارة السماد"
+    # manuring_interventions: "Manuring interventions"
     marketable: "تسويق"
     marketable_items_count: "البنود تسويق عد"
     marketable_net_mass: "الكتلة الصافية للتسويق"

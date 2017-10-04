@@ -1046,6 +1046,7 @@ ita:
     # manure_management_plan: "Manure management plan"
     # manure_management_plan_zone: "Manure management plan zone"
     manure_management_plan_zones: "zone di piano di gestione del letame"
+    # manuring_interventions: "Manuring interventions"
     marketable: "vendibile"
     marketable_items_count: "contano articoli negoziabili"
     marketable_net_mass: "massa netta commerciabile"

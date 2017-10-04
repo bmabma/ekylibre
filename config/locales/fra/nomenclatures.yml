@@ -4552,7 +4552,7 @@ fra:
         champagne_soil: "Sol sur craie Sud Charente et Charente-Martime (Terres de champagne)"
         chesnut_red_soil: "Terre rouge à chataigniers"
         clay_limestone_soil: "Sol argilo-calcaire (Groies)"
-        clay_schist_soil: "Sols argileux sur granite, schiste ou gneiss"
+        clay_schist_soil: "Sols argileux sur granite, schiste ou gneiss" #?
         clay_soil: "Sol d’argile lourde"
         flap_silt_soil: "Sol limoneux battant"
         granite_arena_soil: "Sol sur arène granitique"

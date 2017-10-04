@@ -1019,6 +1019,7 @@ spa:
     # manure_management_plan: "Manure management plan"
     # manure_management_plan_zone: "Manure management plan zone"
     manure_management_plan_zones: "Zonas del plan de manejo del estiércol"
+    # manuring_interventions: "Manuring interventions"
     marketable: "Vendible"
     marketable_items_count: "cuentan artículos negociables"
     marketable_net_mass: "masa neta comercializable"

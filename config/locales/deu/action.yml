@@ -363,7 +363,6 @@ deu:
       new: "Neuer Kredit"
       # show: "Loan: %{name}"
     backend/manure_management_plans:
-      # bilan: "Balance sheet and forecast intervention"
       # edit: "Edit manure management plan: %{name}"
       index: "Dungsmanagementpläne"
       new: "New Gülle-Management-Plan"

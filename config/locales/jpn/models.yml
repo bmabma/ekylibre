@@ -1015,6 +1015,7 @@ jpn:
     # manure_management_plan: "Manure management plan"
     # manure_management_plan_zone: "Manure management plan zone"
     manure_management_plan_zones: "肥料管理計画区域"
+    # manuring_interventions: "Manuring interventions"
     marketable: "市場性のあります"
     marketable_items_count: "有価項目はカウント"
     marketable_net_mass: "有価正味質量"

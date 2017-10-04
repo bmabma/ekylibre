@@ -1015,6 +1015,7 @@ deu:
     # manure_management_plan: "Manure management plan"
     # manure_management_plan_zone: "Manure management plan zone"
     manure_management_plan_zones: "Gülle-Management-Plan Zonen"
+    # manuring_interventions: "Manuring interventions"
     marketable: "marktfähig"
     marketable_items_count: "Marktfähige Produkte zählen"
     marketable_net_mass: "Marktgängige Nettomasse"

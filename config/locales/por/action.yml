@@ -368,7 +368,6 @@ por:
       new: "Novo empréstimo"
       # show: "Loan: %{name}"
     backend/manure_management_plans:
-      # bilan: "Balance sheet and forecast intervention"
       # edit: "Edit manure management plan: %{name}"
       index: "Planos de manejo de dejetos"
       new: "Novo plano de manejo de dejetos"

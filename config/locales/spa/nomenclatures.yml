@@ -4294,7 +4294,6 @@ spa:
         champagne_soil: "Suelo Champagne"
         chesnut_red_soil: "Tierra roja Chesnut"
         clay_limestone_soil: "Piedra caliza del suelo de arcilla"
-        # clay_schist_soil: "Clay schist soil"
         clay_soil: "Suelo arcilloso"
         flap_silt_soil: "Suelo franco colgajo"
         granite_arena_soil: "Arena del suelo de granito"

@@ -1015,6 +1015,7 @@ por:
     # manure_management_plan: "Manure management plan"
     # manure_management_plan_zone: "Manure management plan zone"
     manure_management_plan_zones: "Zonas de plano de manejo de dejetos"
+    # manuring_interventions: "Manuring interventions"
     marketable: "vendável"
     marketable_items_count: "itens comercializáveis ​​contar"
     marketable_net_mass: "massa líquida comercializável"

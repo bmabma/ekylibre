@@ -1015,6 +1015,7 @@ cmn:
     # manure_management_plan: "Manure management plan"
     # manure_management_plan_zone: "Manure management plan zone"
     manure_management_plan_zones: "粪便管理计划区"
+    # manuring_interventions: "Manuring interventions"
     marketable: "销售"
     marketable_items_count: "适销对路的项目数"
     marketable_net_mass: "适销对路的净质量"
