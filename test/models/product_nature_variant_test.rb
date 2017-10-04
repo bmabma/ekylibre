@@ -5,7 +5,7 @@
 # Ekylibre - Simple agricultural ERP
 # Copyright (C) 2008-2009 Brice Texier, Thibaud Merigon
 # Copyright (C) 2010-2012 Brice Texier
-# Copyright (C) 2012-2016 Brice Texier, David Joulin
+# Copyright (C) 2012-2017 Brice Texier, David Joulin
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -22,26 +22,31 @@
 #
 # == Table: product_nature_variants
 #
-#  active               :boolean          default(FALSE), not null
-#  category_id          :integer          not null
-#  created_at           :datetime         not null
-#  creator_id           :integer
-#  custom_fields        :jsonb
-#  derivative_of        :string
-#  id                   :integer          not null, primary key
-#  lock_version         :integer          default(0), not null
-#  name                 :string
-#  nature_id            :integer          not null
-#  number               :string
-#  picture_content_type :string
-#  picture_file_name    :string
-#  picture_file_size    :integer
-#  picture_updated_at   :datetime
-#  reference_name       :string
-#  unit_name            :string           not null
-#  updated_at           :datetime         not null
-#  updater_id           :integer
-#  variety              :string           not null
+#  active                    :boolean          default(FALSE), not null
+#  category_id               :integer          not null
+#  created_at                :datetime         not null
+#  creator_id                :integer
+#  custom_fields             :jsonb
+#  derivative_of             :string
+#  france_maaid              :string
+#  gtin                      :string
+#  id                        :integer          not null, primary key
+#  lock_version              :integer          default(0), not null
+#  name                      :string
+#  nature_id                 :integer          not null
+#  number                    :string           not null
+#  picture_content_type      :string
+#  picture_file_name         :string
+#  picture_file_size         :integer
+#  picture_updated_at        :datetime
+#  reference_name            :string
+#  stock_account_id          :integer
+#  stock_movement_account_id :integer
+#  unit_name                 :string           not null
+#  updated_at                :datetime         not null
+#  updater_id                :integer
+#  variety                   :string           not null
+#  work_number               :string
 #
 require 'test_helper'
 
@@ -59,5 +64,56 @@ class ProductNatureVariantTest < ActiveSupport::TestCase
     assert ProductNatureVariant.flattened_nomenclature.any?
     assert ProductNatureVariant.items_of_expression('is triticum').any?
     assert ProductNatureVariant.items_of_expression('is triticum or is bos_taurus').any?
+  end
+
+  test 'inner sequence' do
+    nature = ProductNature.first
+    v = nature.variants.create!(name: 'Titi', unit_name: 'Piaf')
+    v.destroy
+    v2 = nature.variants.create!(name: 'Gros minet', unit_name: 'Cat')
+    assert v.number != v2.number, 'Numbers should be different'
+  end
+
+  test 'import from nomenclature seedling' do
+    assert_nothing_raised { ProductNatureVariant.import_from_nomenclature(:seedling) }
+  end
+
+  test 'current_outgoing_stock_ordered_not_delivered returns the right amount of variants when sale state is set to order and parcel state to prepared' do
+    variant = create(:product_nature_variant)
+    sale = create(:sale)
+    sale.update(state: 'order')
+    create(:sale_item, sale: sale, variant: variant, quantity: 50.to_d)
+    parcel = create(:parcel, sale: sale)
+    parcel.update(state: 'prepared')
+    assert_equal 50.0, variant.current_outgoing_stock_ordered_not_delivered
+  end
+
+  test 'current_outgoing_stock_ordered_not_delivered returns the right amount of variants when sale state is set to draft and parcel state to draft' do
+    variant = create(:product_nature_variant)
+    sale = create(:sale)
+    create(:sale_item, sale: sale, variant: variant, quantity: 50.to_d)
+    parcel = create(:parcel, sale: sale)
+    assert_equal 0, variant.current_outgoing_stock_ordered_not_delivered
+  end
+
+  test 'current_outgoing_stock_ordered_not_delivered returns the right amount of variants when sale state is set to order and parcel state to given' do
+    variant = create(:product_nature_variant)
+    product = create(:product)
+    sale = create(:sale)
+    sale.update(state: 'order')
+    create(:sale_item, sale: sale, variant: variant, quantity: 50.to_d)
+    parcel = create(:parcel, sale: sale)
+    create(:parcel_item, parcel: parcel, variant: variant, population: 1.to_d, product: product, product_identification_number: '12345678', product_name: 'Product name')
+    parcel.update(state: 'given')
+    assert_equal 49.0, variant.current_outgoing_stock_ordered_not_delivered
+  end
+
+  test 'current_outgoing_stock_ordered_not_delivered returns the right amount of variants when parcel state is set to prepared and there is no sale related' do
+    variant = create(:product_nature_variant)
+    parcel = create(:outgoing_parcel)
+    product = create(:product, variant: variant)
+    t = create(:outgoing_parcel_item, parcel: parcel, source_product: product, population: 1.to_d)
+    parcel.update(state: 'prepared')
+    assert_equal 1, variant.current_outgoing_stock_ordered_not_delivered
   end
 end

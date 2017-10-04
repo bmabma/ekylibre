@@ -1,9 +1,13 @@
 module Visualization
   class Configuration
+    include Rails.application.routes.url_helpers
+
     def initialize(config = {})
       @config = config
       @categories_colors = @config.delete(:categories_colors)
-      @config[:backgrounds] = MapBackground.availables.collect(&:to_json_object)
+      @config[:backgrounds] = MapLayer.available_backgrounds.collect(&:to_json_object)
+      @config[:overlays] = MapLayer.available_overlays.collect(&:to_json_object)
+      @config[:async_url] = @config.delete(:async_url)
     end
 
     def background(layer, options = {})
@@ -15,9 +19,12 @@ module Visualization
       @config[:backgrounds] << options
     end
 
-    def overlay(name, provider_name)
+    def overlay(layer, options = {})
+      options[:name] = layer.name if layer.name?
+      options[:url] = layer.url if layer.url?
+      options[:opacity] = layer.opacity if layer.opacity
       @config[:overlays] ||= []
-      @config[:overlays] << { name: name, provider_name: provider_name }
+      @config[:overlays] << options
     end
 
     # def layer(name, list = {})
@@ -70,6 +77,14 @@ module Visualization
       layer(name, serie, { colors: @categories_colors }.merge(options.merge(type: :points)))
     end
 
+    def point_group(name, serie, options = {})
+      layer(name, serie, options.merge(type: :point_group))
+    end
+
+    def sensor_group(name, serie, options = {})
+      layer(name, serie, options.merge(type: :sensor_group))
+    end
+
     # def multi_points(name, serie, options = {})
     #   layer(name, serie, options.merge(type: :multi_points))
     # end
@@ -92,8 +107,13 @@ module Visualization
       @config[:controls][name.to_s.camelize(:lower)] = options
     end
 
-    def to_json
+    def to_json(options = {})
       @config.jsonize_keys.to_json
+    end
+
+    def center(point)
+      @config[:view] ||= {}.with_indifferent_access
+      @config[:view][:center] = point
     end
 
     protected
@@ -103,13 +123,13 @@ module Visualization
       if object.is_a?(TrueClass)
         hash = { header: item[:name] }
         for key, value in item
-          unless [:header, :footer, :name, :shape].include?(key)
+          unless %i[header footer name shape].include?(key)
             hash[key] = value.to_s
           end
         end
         compile_visualization_popup(hash, item)
       elsif object.is_a?(String)
-        return [{ type: :content, content: object }]
+        [{ type: :content, content: object }]
       elsif object.is_a?(Hash)
         blocks = []
         if header = object[:header]
@@ -160,7 +180,7 @@ module Visualization
         if footer = object[:footer]
           blocks << compile_block(footer, :footer, content: item[:name])
         end
-        return blocks
+        blocks
       else
         raise "Not implemented for #{object.class}"
       end
@@ -202,9 +222,14 @@ module VisualizationsHelper
   #     - v.control :background_selector
   #     - v.control :search
   #
-  def visualization(options = {}, html_options = {})
+  def configure_visualization(options = {})
     config = Visualization::Configuration.new({ categories_colors: theme_colors }.merge(options))
     yield config
+    config
+  end
+
+  def visualization(options = {}, html_options = {}, &block)
+    config = configure_visualization(options, &block)
     content_tag(:div, nil, html_options.deep_merge(data: { visualization: config.to_json }))
   end
 end

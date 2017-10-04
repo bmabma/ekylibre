@@ -1,10 +1,10 @@
 - main_toolbar do |t|
-  = t.new
+  = t.new params: { redirect: nil }
 
 = janus do |j|
   - if resource_model.any?
     - j.face :map do
-      = main_resources_map
+      = main_resources_map(async: true)
     -# if current_campaign
       - j.face :chart do
         = cell :cropping_plan_on_cultivable_zones, params: {campaign_id: current_campaign.id}

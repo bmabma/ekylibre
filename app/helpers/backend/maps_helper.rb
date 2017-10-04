@@ -90,13 +90,13 @@ module Backend
       end
       # FIXME: map_editors options cannot be in data/map_editors because it's pleonastic
       options[:data][:map_editor][:controls] ||= {}
-      options[:data][:map_editor][:controls][:importers] ||= { formats: [:gml, :kml, :geojson] }
+      options[:data][:map_editor][:controls][:importers] ||= { formats: %i[gml kml geojson] }
 
       if options[:data][:map_editor][:controls].key? :importers
         options.deep_merge!(data: { map_editor: { controls: { importers: { content: importer_form(options[:data][:map_editor][:controls][:importers][:formats]) } } } })
       end
 
-      options[:data][:map_editor][:back] ||= MapBackground.availables.collect(&:to_json_object)
+      options[:data][:map_editor][:back] ||= MapLayer.available_backgrounds.collect(&:to_json_object)
 
       options.deep_merge!(data: { map_editor: { edit: geometry } }) unless value.nil?
 
@@ -110,7 +110,11 @@ module Backend
 
     # Use model_map to 'resources' map from current controller
     def resources_map(options = {}, &block)
-      model_map(resource_model.where.not(id: nil), options, &block)
+      if options.delete(:async)
+        async_model_map(options, &block)
+      else
+        model_map(resource_model.where.not(id: nil), options, &block)
+      end
     end
 
     # A module map displays an ActiveRecord::Relation as map. Model must have
@@ -151,8 +155,34 @@ module Backend
       collection_map(data, options, &block)
     end
 
+    # An asynchronous version of the model map method
+    def async_model_map(options = {}, &block)
+      html_options = {}
+      center = options.delete(:center)
+      center = true if center.nil?
+
+      if options.delete(:main)
+        options[:box] ||= {}
+        options[:box][:height] = '100%'
+        html_options[:class] = 'map-fullwidth'
+      end
+
+      visualization(options.merge(async_url: backend_visualizations_resources_visualizations_path(resource_name: resource_model.model_name.singular)), html_options) do |v|
+        v.control :zoom
+        v.control :scale
+        v.control :fullscreen
+        v.control :layer_selector
+
+        if center && resource_model.first.respond_to?(:shape_centroid)
+          v.center resource_model.first.shape_centroid
+        end
+      end
+    end
+
+
     # Build a map with a given list of object
     def collection_map(data, options = {}, &_block)
+      html_options = {}
       return nil unless data.any?
       backgrounds = options.delete(:backgrounds) || []
       options = {
@@ -166,8 +196,9 @@ module Backend
       if options.delete(:main)
         options[:box] ||= {}
         options[:box][:height] = '100%'
+        html_options[:class] = 'map-fullwidth'
       end
-      visualization(options) do |v|
+      visualization(options, html_options) do |v|
         backgrounds.each do |b|
           v.background(b)
         end

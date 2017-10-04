@@ -35,20 +35,12 @@ db/first_runs
 /backup
 *~
 
-# Ignores datasources
-db/datasources
-
 # Ignore jasper files
 config/locales/*/reporting/*.jasper
 config/locales/*/reporting/*.pdf
 
 # Ignore private files
 private/*
-!private/test/
-private/test/tmp
-private/test/reporting
-private/test/attachments
-private/test/plugins
 
 # Ignore compiled assets
 /public/assets
@@ -63,8 +55,10 @@ private/test/plugins
 /config/api.yml
 /config/tools.xml
 /config/tenants.yml
+/config/tenant_databases.yml
 /config/services.yml
 /config/unicorn.rb
+/config/application.yml
 
 # Coveralls
 coverage
@@ -79,8 +73,8 @@ capybara*.html
 /.ruby-version
 /.ruby-gemset
 
+# Local Gemfile
 Gemfile.local
-Gemfile.local.lock
 
 Procfile.*
 
@@ -88,3 +82,4 @@ Procfile.*
 *.sw?
 
 .byebug_history
+.gitconfig

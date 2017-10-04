@@ -8,6 +8,7 @@ class mapeditor.Simple
     else
       L.geoJson(@data, {
         onEachFeature: (feature, layer) =>
+          feature.properties ||= {}
           feature.properties['internal_id'] = widget.guuid()
           if feature.properties.name
             label = new L.GhostLabel(className: 'leaflet-ghost-label', toBack: false).setContent(feature.properties.name).toCentroidOfBounds(layer.getLatLngs())
@@ -22,7 +23,7 @@ class mapeditor.Simple
           widget.modalizeSeries(feature,layer) if @layer.modal
 
         style: (feature) =>
-          $.extend {}, true, globalStyle, feature.properties
+          $.extend({}, true, globalStyle, feature.properties) if feature.properties?
       })
 
   buildLegend: () ->

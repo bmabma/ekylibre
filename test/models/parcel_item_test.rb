@@ -5,7 +5,7 @@
 # Ekylibre - Simple agricultural ERP
 # Copyright (C) 2008-2009 Brice Texier, Thibaud Merigon
 # Copyright (C) 2010-2012 Brice Texier
-# Copyright (C) 2012-2016 Brice Texier, David Joulin
+# Copyright (C) 2012-2017 Brice Texier, David Joulin
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -25,11 +25,13 @@
 #  analysis_id                   :integer
 #  created_at                    :datetime         not null
 #  creator_id                    :integer
+#  currency                      :string
 #  id                            :integer          not null, primary key
 #  lock_version                  :integer          default(0), not null
 #  parcel_id                     :integer          not null
 #  parted                        :boolean          default(FALSE), not null
 #  population                    :decimal(19, 4)
+#  pretax_amount                 :decimal(19, 4)   default(0.0), not null
 #  product_enjoyment_id          :integer
 #  product_id                    :integer
 #  product_identification_number :string
@@ -42,6 +44,8 @@
 #  shape                         :geometry({:srid=>4326, :type=>"multi_polygon"})
 #  source_product_id             :integer
 #  source_product_movement_id    :integer
+#  unit_pretax_amount            :decimal(19, 4)   default(0.0), not null
+#  unit_pretax_stock_amount      :decimal(19, 4)   default(0.0), not null
 #  updated_at                    :datetime         not null
 #  updater_id                    :integer
 #  variant_id                    :integer
@@ -51,4 +55,22 @@ require 'test_helper'
 class ParcelItemTest < ActiveSupport::TestCase
   test_model_actions
   # Add tests here...
+
+  test 'parcel item have a valid factory' do
+    parcel_item = build(:outgoing_parcel_item)
+    assert parcel_item.valid?
+  end
+
+  test 'parcel_item without population give take the population of the source_product population' do
+    parcel_item = create(:outgoing_parcel_item)
+    assert_equal 1, parcel_item.population
+  end
+
+  test 'parcel_item with population have the given population' do
+    nature = create(:product_nature, population_counting: :decimal)
+    variant = create(:product_nature_variant, nature: nature)
+    product = create(:product, variant: variant)
+    parcel_item = create(:outgoing_parcel_item, population: 12, source_product: product)
+    assert_equal 12, parcel_item.population
+  end
 end

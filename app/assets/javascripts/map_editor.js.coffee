@@ -56,8 +56,11 @@
       box:
         height: 400
         width: null
+      minZoom: 0
+      maxZoom: 25
       customClass: ''
       back: []
+      overlays: []
       show:
         layers: {}
         layerDefaults:
@@ -158,7 +161,6 @@
       this.mapElement = $("<div>", class: "map #{this.options.customClass}")
         .insertAfter(this.element)
       this.map = L.map(this.mapElement[0],
-        maxZoom: 25
         zoomControl: false
         attributionControl: true
       )
@@ -287,6 +289,12 @@
 
       $(this.mapElement).on 'click', '.updateAttributesSerieInPopup', @updateAttributesSeries
 
+#      @map.on "viewreset", (e) =>
+#        console.log "NEW BOUNDING BOX", e.target.getBounds().toBBoxString()
+#        @setDynamicSeries()
+
+      @setDynamicSeries()
+
 
       widget.element.trigger "mapeditor:loaded"
 
@@ -297,6 +305,28 @@
         d = Math.floor(d / 16)
         (if c == 'x' then r else r & 0x3 | 0x8).toString 16)
 
+    setDynamicSeries: ->
+      return unless @options.dynamic_series?
+
+      $.ajax
+        method: 'GET'
+        dataType: 'json'
+        url: @options.dynamic_series
+        beforeSend: () =>
+          @dynamic_loading = new L.control(position: "bottomleft")
+          @dynamic_loading.onAdd = (map) =>
+            L.DomUtil.create('div', 'leaflet-dynamic loading')
+
+          @map.addControl @dynamic_loading
+        success: (data) =>
+          $.extend(true, @options.show, data.show)
+          @_refreshReferenceLayerGroup()
+          @_refreshControls()
+        complete: () =>
+          @map.removeControl @dynamic_loading
+
+      #Ensure edition layer is on top
+      @edition.bringToFront() if @edition
 
     updateFeature: (feature_id, attributeName, attributeValue) ->
       this.updateFeatureProperties(feature_id, attributeName, attributeValue)
@@ -418,17 +448,17 @@
         popup += "<div class='popup-content'>"
 
         for attribute in feature.properties['popupAttributes']
-            popup += "<div>"
-            popup += "<label for='#{attribute.property_value}'>#{attribute.property_label} : </label>"
-            switch attribute.type
-             when 'input'
+          popup += "<div>"
+          popup += "<label for='#{attribute.property_value}'>#{attribute.property_label} : </label>"
+          switch attribute.type
+            when 'input'
               popup += "<input type='text' name='#{attribute.property_value}' class='updateAttributesSerieLabelInput' value='#{feature.properties[attribute.property_value] || ""}'/>"
-             else
-                # include label
-                popup += "<span>#{feature.properties[attribute.property_value] || ''}</span>"
-            if feature.properties[attribute.unit]
-              popup += "<span>#{feature.properties[attribute.unit] || ''}</span>"
-            popup += "</div>"
+            else
+              # include label
+              popup += "<span>#{feature.properties[attribute.property_value] || ''}</span>"
+          if feature.properties[attribute.unit]
+            popup += "<span>#{feature.properties[attribute.unit] || ''}</span>"
+          popup += "</div>"
         if layer.feature and layer.feature.geometry and layer.feature.geometry.type == 'MultiPolygon'
           layer.eachLayer (layer) =>
             unless layer.options.popup_button_ok == false
@@ -597,8 +627,8 @@
             for layer, index in @options.back
               opts = {}
               opts['attribution'] = layer.attribution if layer.attribution?
-              opts['minZoom'] = layer.minZoom if layer.minZoom?
-              opts['maxZoom'] = layer.maxZoom if layer.maxZoom?
+              opts['minZoom'] = layer.minZoom || @options.minZoom
+              opts['maxZoom'] = layer.maxZoom || @options.maxZoom
               opts['subdomains'] = layer.subdomains if layer.subdomains?
               opts['tms'] = true if layer.tms
 
@@ -615,8 +645,25 @@
               backgroundLayer = L.tileLayer.provider(layer)
               baseLayers[layer] = backgroundLayer
               @map.addLayer(backgroundLayer) if index == 0
+            @map.fitWorld( { maxZoom: @options.maxZoom } )
 
-          @layerSelector = new L.Control.Layers(baseLayers)
+          overlayLayers = {}
+
+          if @options.overlays.length > 0
+            for layer, index in @options.overlays
+              opts = {}
+              opts['attribution'] = layer.attribution if layer.attribution?
+              opts['minZoom'] = layer.minZoom || @options.minZoom
+              opts['maxZoom'] = layer.maxZoom || @options.maxZoom
+              opts['subdomains'] = layer.subdomains if layer.subdomains?
+              opts['opacity'] = (layer.opacity / 100).toFixed(1) if layer.opacity? and !isNaN(layer.opacity)
+              opts['tms'] = true if layer.tms
+              console.log opts
+
+              overlayLayers[layer.name] =  L.tileLayer(layer.url, opts)
+
+
+          @layerSelector = new L.Control.Layers(baseLayers, overlayLayers)
           @map.addControl  @layerSelector
         else
           console.log "How to set background with #{this.options.back}?"
@@ -633,12 +680,12 @@
     _refreshReferenceLayerGroup: ->
       if this.reference?
         this.map.removeLayer this.reference
-      if this.options.show? and this.options.show.layers.length > 0
+      if this.options.show?
         if this.options.useFeatures
 
           if @options.show.series?
 
-            @seriesReferencesLayers = {}
+            @seriesReferencesLayers ||= {}
 
             for layer in @options.show.layers
 
@@ -650,6 +697,9 @@
                 layerGroup = renderedLayer.buildLayerGroup(this, options)
                 layerGroup.name = layer.name
                 layerGroup.renderedLayer = renderedLayer
+
+                if @seriesReferencesLayers[layer.label]?
+                  @map.removeLayer(@seriesReferencesLayers[layer.label])
 
                 @seriesReferencesLayers[layer.label] = layerGroup
                 for key of layerGroup._layers
@@ -757,7 +807,7 @@
             @featureStyling feature
         })
 
-#      this.edition.setStyle this.options.editStyle
+      # this.edition.setStyle this.options.editStyle
       this.edition.addTo this.map
       this._refreshControls()
       this._saveUpdates()
@@ -806,10 +856,10 @@
           catch
             this._setDefaultView()
       else if view is 'edit'
-         try
+        try
           this.map.fitBounds this.edition.getLayers()[0].getBounds()
-         catch
-           this._setDefaultView()
+        catch
+          this._setDefaultView()
       else if view is 'default'
         this._setDefaultView()
       else if view.center?
@@ -883,7 +933,24 @@
                 if feature.alert?
                   $(modal._container).find('#alert').text(feature.alert)
                 else
-                  this.edition.addData feature
+                  try
+                    widget.edition.addData feature
+                  catch
+                    polys = []
+                    this.edition = L.geoJson(feature, {
+                      onEachFeature: (feature, layer) =>
+                        @onEachFeature(feature, layer)
+
+                      style: (feature) =>
+                        @featureStyling feature
+                      filter: (feature) =>
+                        if feature.type == 'MultiPolygon'
+                          for coordinates in feature.coordinates
+                            polys.push {type: 'Polygon', coordinates: coordinates}
+                        !(feature.type == 'MultiPolygon')
+                    })
+                    this.edition.addTo this.map
+
                   this.update()
                   modal.hide()
 
@@ -907,6 +974,8 @@
         L.DomUtil.create('div', 'leaflet-legend-control')
 
       this.map.addControl this.controls.legend
+
+      L.DomUtil.addClass(@controls.legend.getContainer(), 'leaflet-hidden-control')
 
 
       if this.options.multiLevels?
@@ -959,8 +1028,9 @@
           for label, layer of @seriesReferencesLayers
             selector.addOverlay(layer, label)
             @layersScheduler.insert layer._leaflet_id
-            @controls.legend.getContainer().innerHTML += layer.renderedLayer.buildLegend() if layer.renderedLayer.options.legend
-
+            if layer.renderedLayer.options.legend
+              @controls.legend.getContainer().innerHTML += layer.renderedLayer.buildLegend()
+              L.DomUtil.removeClass(@controls.legend.getContainer(), 'leaflet-hidden-control')
 
         if @edition? and @edition.getLayers().length > 0
           selector.addOverlay(@edition, @options.overlaySelector.editionLayer)
