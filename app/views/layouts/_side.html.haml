@@ -1,5 +1,8 @@
 #home.snippet.snippet-home
   = link_to content_tag(:i)+" Home", backend_root_path, class: "home-button snippet-title"
+  
+#dashboard-item.snippet.snippet-dashboard
+  = sidebar_dashboard_item
 
 - if part = Ekylibre::Navigation.part_of(controller.controller_path, action_name)
   - current = Ekylibre::Navigation.reverse(controller.controller_path, action_name) || {}
