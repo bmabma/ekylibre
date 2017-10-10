@@ -33,8 +33,6 @@ module NavigationHelper
   end
   
   def sidebar_dashboard_item
-    puts "____________________#{params[:controller]}"
-    puts "====================#{params[:action]}"
     case params[:controller]
     when "backend/events"
       link_to content_tag(:i)+" Relationship", relationship_backend_dashboards_path, class: "dashboard-item snippet-title"
